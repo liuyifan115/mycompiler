@@ -1,26 +1,19 @@
-use prefix::{claculate_prefix, infix_to_prefix};
-use token_praser::Token;
+use lexer::{preprocesser::{self, preprocesser, read_source}, scanner::scanner};
+use log::debug;
 
-mod token_praser;
-mod prefix;
+mod lexer;
 
 
 fn main() {
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input).expect("Failed to read line");
-    println!("{:?}", token_praser::prase_token(&input));
-    display_token_list(&infix_to_prefix(&token_praser::prase_token(&input)));
-    println!("{}", claculate_prefix(&infix_to_prefix(&token_praser::prase_token(&input))))
-}
+    env_logger::init_from_env(env_logger::Env::new().filter("RUST_LOG").write_style("debug"));
 
-fn display_token_list(tokens: &Vec<Token>) {
-    for token in tokens {
-        match token {
-            Token::Operand(operand) => print!("{} ", operand),
-            Token::Operator(operator, _) => print!("{} ", operator),
-            Token::LeftBracket => print!("( "),
-            Token::RightBracket => print!(") "),
-        }
-    }
-    println!("");
+    let mut input = String::from("sourceProgram8");
+    let source_file_path = std::env::current_dir().unwrap().join(input);
+    debug!("path: {:?}", source_file_path);
+
+    let preprocesser_output = preprocesser(&read_source(source_file_path));
+    debug!("source: {:?}", preprocesser_output);
+
+    let scanner_output = scanner(preprocesser_output);
+    debug!("tokens: {:?}", scanner_output);
 }
