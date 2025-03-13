@@ -25,7 +25,7 @@ enum ScannerState {
 pub fn scanner(input: Vec<(String, usize)>) -> Result<Vec<Token>, ()> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut state = ScannerState::Init;
-    let mut scnnner_buf = String::new();
+    let mut scanner_buf = String::new();
 
     for line in input.iter() {
         let mut line_iter = line.0.chars().peekable();
@@ -34,11 +34,11 @@ pub fn scanner(input: Vec<(String, usize)>) -> Result<Vec<Token>, ()> {
                 ScannerState::Init => {
                     match ch {
                         'a'..='z' | 'A'..='Z' | '_' => {
-                            scnnner_buf.push(ch);
+                            scanner_buf.push(ch);
                             state = ScannerState::Word;
                         }
                         '0'..='9' => {
-                            scnnner_buf.push(ch);
+                            scanner_buf.push(ch);
                             state = ScannerState::Integer;
                         }
                         '{' | '}' | '(' | ')' | ';' | ',' | '+' | '*' | '/' | '-' => {
@@ -46,7 +46,7 @@ pub fn scanner(input: Vec<(String, usize)>) -> Result<Vec<Token>, ()> {
                             state = ScannerState::Init;
                         }
                         '=' | '>' | '<' | '!' | '|' | '&' | ':' => {
-                            scnnner_buf.push(ch);
+                            scanner_buf.push(ch);
                             state = ScannerState::LongSymbol;
                         }
                         _ => {}
@@ -55,23 +55,23 @@ pub fn scanner(input: Vec<(String, usize)>) -> Result<Vec<Token>, ()> {
                 ScannerState::Word => {
                     match ch {
                         'a'..='z' | 'A'..='Z' | '0'..='9' | '_' => {
-                            scnnner_buf.push(ch);
+                            scanner_buf.push(ch);
                         }
                         ' ' => {
-                            tokens.push(word_to_token(&scnnner_buf)?);
-                            scnnner_buf.clear();
+                            tokens.push(word_to_token(&scanner_buf)?);
+                            scanner_buf.clear();
                             state = ScannerState::Init;
                         }
                         '{' | '}' | '(' | ')' | ';' | ',' | '+' | '*' | '/' | '-' => {
-                            tokens.push(word_to_token(&scnnner_buf)?);
-                            scnnner_buf.clear();
+                            tokens.push(word_to_token(&scanner_buf)?);
+                            scanner_buf.clear();
                             tokens.push(symbol_to_token(ch)?);
                             state = ScannerState::Init;
                         }
                         '=' | '>' | '<' | '!' | '|' | '&' | ':' => {
-                            tokens.push(word_to_token(&scnnner_buf)?);
-                            scnnner_buf.clear();
-                            scnnner_buf.push(ch);
+                            tokens.push(word_to_token(&scanner_buf)?);
+                            scanner_buf.clear();
+                            scanner_buf.push(ch);
                             state = ScannerState::LongSymbol;
                         }
                         _ => {
@@ -82,32 +82,32 @@ pub fn scanner(input: Vec<(String, usize)>) -> Result<Vec<Token>, ()> {
                 ScannerState::LongSymbol => {
                     match ch {
                         '=' | '|' | '&' => {
-                            scnnner_buf.push(ch);
-                            tokens.push(long_symbol_to_token(&scnnner_buf)?);
-                            scnnner_buf.clear();
+                            scanner_buf.push(ch);
+                            tokens.push(long_symbol_to_token(&scanner_buf)?);
+                            scanner_buf.clear();
                             state = ScannerState::Init;
                         }
                         '{' | '}' | '(' | ')' | ';' | ',' | '+' | '*' | '/' | '-' | '>' | '<' | '!' | ':' => {
-                            tokens.push(symbol_to_token(scnnner_buf.chars().last().unwrap())?);
+                            tokens.push(symbol_to_token(scanner_buf.chars().last().unwrap())?);
                             tokens.push(symbol_to_token(ch)?);
-                            scnnner_buf.clear();
+                            scanner_buf.clear();
                             state = ScannerState::Init;
                         }
                         ' ' => {
-                            tokens.push(symbol_to_token(scnnner_buf.chars().last().unwrap())?);
-                            scnnner_buf.clear();
+                            tokens.push(symbol_to_token(scanner_buf.chars().last().unwrap())?);
+                            scanner_buf.clear();
                             state = ScannerState::Init;
                         }
                         'a'..='z' | 'A'..='Z' | '_' => {
-                            tokens.push(symbol_to_token(scnnner_buf.chars().last().unwrap())?);
-                            scnnner_buf.clear();
-                            scnnner_buf.push(ch);
+                            tokens.push(symbol_to_token(scanner_buf.chars().last().unwrap())?);
+                            scanner_buf.clear();
+                            scanner_buf.push(ch);
                             state = ScannerState::Word;
                         }
                         '0'..='9' => {
-                            tokens.push(symbol_to_token(scnnner_buf.chars().last().unwrap())?);
-                            scnnner_buf.clear();
-                            scnnner_buf.push(ch);
+                            tokens.push(symbol_to_token(scanner_buf.chars().last().unwrap())?);
+                            scanner_buf.clear();
+                            scanner_buf.push(ch);
                             state = ScannerState::Integer;
                         }
                         _ => {
@@ -118,23 +118,23 @@ pub fn scanner(input: Vec<(String, usize)>) -> Result<Vec<Token>, ()> {
                 ScannerState::Integer => {
                     match ch {
                         '0'..='9' => {
-                            scnnner_buf.push(ch);
+                            scanner_buf.push(ch);
                         }
                         ' ' => {
-                            tokens.push(Token::Integer(scnnner_buf.parse::<i32>().unwrap()));
-                            scnnner_buf.clear();
+                            tokens.push(Token::Integer(scanner_buf.parse::<i32>().unwrap()));
+                            scanner_buf.clear();
                             state = ScannerState::Init;
                         }
                         '{' | '}' | '(' | ')' | ';' | ',' | '+' | '*' | '/' | '-' => {
-                            tokens.push(Token::Integer(scnnner_buf.parse::<i32>().unwrap()));
-                            scnnner_buf.clear();
+                            tokens.push(Token::Integer(scanner_buf.parse::<i32>().unwrap()));
+                            scanner_buf.clear();
                             tokens.push(symbol_to_token(ch)?);
                             state = ScannerState::Init;
                         }
                         '=' | '>' | '<' | '!' | '|' | '&' | ':' => {
-                            tokens.push(Token::Integer(scnnner_buf.parse::<i32>().unwrap()));
-                            scnnner_buf.clear();
-                            scnnner_buf.push(ch);
+                            tokens.push(Token::Integer(scanner_buf.parse::<i32>().unwrap()));
+                            scanner_buf.clear();
+                            scanner_buf.push(ch);
                             state = ScannerState::LongSymbol;
                         }
                         _ => {
@@ -167,8 +167,8 @@ fn word_to_token(word: &str) -> Result<Token, ()> {
 }
 
 #[inline]
-fn symbol_to_token(seperator: char) -> Result<Token, ()> {
-    match seperator {
+fn symbol_to_token(separator: char) -> Result<Token, ()> {
+    match separator {
         '{' => Ok(Token::Seperator(Seperator::LeftCurlyBracket)),
         '}' => Ok(Token::Seperator(Seperator::RightCurlyBracket)),
         ';' => Ok(Token::Seperator(Seperator::Semicolon)),
